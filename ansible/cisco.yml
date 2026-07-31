@@ -1,0 +1,12 @@
+---
+- name: Department-Level Campus Network Design & Management playbook
+  hosts: switches
+  become: yes
+
+  tasks:
+    - name: Configure the login banner
+      cisco.ios.ios_banner:
+        banner: login
+        text: |
+          Department-Level Campus Network Design & Management
+        state: present
