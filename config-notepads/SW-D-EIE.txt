@@ -1,0 +1,46 @@
+
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#hostname SW-D-EIE
+SW-D-EIE(config)#enable secret cisco
+SW-D-EIE(config)#ip domain-name eng.ruh.ac.lk
+SW-D-EIE(config)#crypto key generate rsa modulus 2048
+The name for the keys will be: SW-D-EIE.eng.ruh.ac.lk
+
+% The key modulus size is 2048 bits
+% Generating 2048 bit RSA keys, keys will be non-exportable...
+[OK] (elapsed time was 8 seconds)
+
+SW-D-EIE(config)#username admin privilege 15 secret admin
+SW-D-EIE(config)#vlan 99
+SW-D-EIE(config-vlan)#name MGMT
+SW-D-EIE(config-vlan)#interface vlan 99
+
+*Aug  2 06:40:33.293: %PLATFORM-5-SIGNATURE_VERIFIED: Image 'flash0:/vios_l2-adventerprisek9-m' passed code signing verification
+SW-D-EIE(config-if)#ip address 10.99.99.10 255.255.255.0
+SW-D-EIE(config-if)#
+*Aug  2 06:40:34.376: %SSH-5-ENABLED: SSH 1.99 has been enabledno shut
+SW-D-EIE(config-if)#exit
+SW-D-EIE(config)#line vty 0 4
+SW-D-EIE(config-line)#login local
+SW-D-EIE(config-line)#transport input ssh
+SW-D-EIE(config-line)#exit
+SW-D-EIE(config)#ip routing
+*Aug  2 06:40:35.616: %LINEPROTO-5-UPDOWN: Line protocol on Interface Vlan99, changed state to down
+*Aug  2 06:40:37.998: %LINK-3-UPDOWN: Interface Vlan99, changed state to down
+SW-D-EIE(config)#
+SW-D-EIE(config)#do sh vlan br
+
+VLAN Name                             Status    Ports
+---- -------------------------------- --------- -------------------------------
+1    default                          active    Gi0/0, Gi0/1, Gi0/2, Gi0/3
+                                                Gi1/0, Gi1/1, Gi1/2, Gi1/3
+                                                Gi2/0, Gi2/1, Gi2/2, Gi2/3
+                                                Gi3/0, Gi3/1, Gi3/2, Gi3/3
+99   MGMT                             active
+1002 fddi-default                     act/unsup
+1003 token-ring-default               act/unsup
+1004 fddinet-default                  act/unsup
+1005 trnet-default                    act/unsup
+SW-D-EIE(config)#
