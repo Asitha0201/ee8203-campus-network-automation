@@ -103,6 +103,16 @@ def generate_router_config(device_data):
             config_commands.append(f"ip access-list {acl['type']} {acl_name}")
             for rule in acl.get("rules", []):
                 config_commands.append(f" {rule}")
+                
+            # Apply to interfaces if specified
+            if "apply_to" in acl:
+                for target in acl["apply_to"]:
+                    config_commands.append(f"interface {target['interface']}")
+                    config_commands.append(f" ip access-group {acl_name} {target['direction']}")
+                
+    if "static_routes" in device_data:
+        for route in device_data["static_routes"]:
+            config_commands.append(f"ip route {route}")
 
     # 4. NAT Overload Configuration
     if "nat" in device_data:
@@ -174,7 +184,7 @@ def configure_device(device_info, global_vars):
         # Build commands based on role
         commands_to_send = []
         
-        if device_info.get("role") == "router":
+        if device_info.get("role") in ["router", "core_switch"]:
             commands_to_send.extend(generate_router_config(device_info))
             
         # Push SNMP commands to all devices
