@@ -1,0 +1,72 @@
+Switch>enable
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#hostname SW-CORE
+SW-CORE(config)#enable se
+SW-CORE(config)#enable secret cisco
+SW-CORE(config)#ip doma
+SW-CORE(config)#ip domain-n
+SW-CORE(config)#ip domain-name eng.ruh.ac.lk
+SW-CORE(config)#cr
+SW-CORE(config)#crypto k
+SW-CORE(config)#crypto key ge
+SW-CORE(config)#crypto key generate rs
+SW-CORE(config)#crypto key generate rsa mo
+SW-CORE(config)#crypto key generate rsa modulus
+*Aug  2 05:59:45.501: %PNP-6-PNP_DISCOVERY_STOPPED: PnP Discovery stopped (Config Wizard)
+SW-CORE(config)#crypto key generate rsa modulus 2048
+The name for the keys will be: SW-CORE.eng.ruh.ac.lk
+
+% The key modulus size is 2048 bits
+% Generating 2048 bit RSA keys, keys will be non-exportable...
+[OK] (elapsed time was 1 seconds)
+
+SW-CORE(config)#
+*Aug  2 06:00:08.473: %SSH-5-ENABLED: SSH 1.99 has been enabled
+SW-CORE(config)#user
+SW-CORE(config)#usern
+SW-CORE(config)#username admin pri
+SW-CORE(config)#username admin privilege 15 se
+SW-CORE(config)#username admin privilege 15 secret admin
+SW-CORE(config)#
+SW-CORE(config)#
+SW-CORE(config)#
+SW-CORE(config)#
+SW-CORE#
+*Aug  2 06:01:25.190: %SYS-5-CONFIG_I: Configured from console by console
+SW-CORE#
+SW-CORE#vlan 99
+             ^
+% Invalid input detected at '^' marker.
+
+SW-CORE#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+SW-CORE(config)#vlan 99
+SW-CORE(config-vlan)#name MGMT
+SW-CORE(config-vlan)#inter
+SW-CORE(config-vlan)#interfa
+SW-CORE(config-vlan)#interface vlan 99
+SW-CORE(config-if)#
+*Aug  2 06:04:14.703: %LINEPROTO-5-UPDOWN: Line protocol on Interface Vlan99, changed state to down
+SW-CORE(config-if)#ip addr
+SW-CORE(config-if)#ip address 10.99.99.1 255.255.255.0
+SW-CORE(config-if)#no shu
+SW-CORE(config-if)#no shutdown
+SW-CORE(config-if)#
+*Aug  2 06:05:28.087: %LINK-3-UPDOWN: Interface Vlan99, changed state to down
+SW-CORE(config-if)#
+SW-CORE(config-if)#exit
+SW-CORE(config)#
+SW-CORE(config)#line vty 0 4
+SW-CORE(config-line)#login local
+SW-CORE(config-line)#tran
+SW-CORE(config-line)#transport in
+SW-CORE(config-line)#transport input ssh
+SW-CORE(config-line)#exit
+SW-CORE(config)#
+SW-CORE(config)#do wr
+Building configuration...
+Compressed configuration from 3440 bytes to 1923 bytes[OK]
+SW-CORE(config)#
+*Aug  2 06:06:26.094: %GRUB-5-CONFIG_WRITING: GRUB configuration is being updated on disk. Please wait...
+*Aug  2 06:06:26.886: %GRUB-5-CONFIG_WRITTEN: GRUB configuration was written to disk successfully.
