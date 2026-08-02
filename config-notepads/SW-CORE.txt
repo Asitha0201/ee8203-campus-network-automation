@@ -70,3 +70,11 @@ Compressed configuration from 3440 bytes to 1923 bytes[OK]
 SW-CORE(config)#
 *Aug  2 06:06:26.094: %GRUB-5-CONFIG_WRITING: GRUB configuration is being updated on disk. Please wait...
 *Aug  2 06:06:26.886: %GRUB-5-CONFIG_WRITTEN: GRUB configuration was written to disk successfully.
+
+
+SW-CORE#
+SW-CORE#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+SW-CORE(config)#ip routing
+SW-CORE(config)#
+SW-CORE(config)#
