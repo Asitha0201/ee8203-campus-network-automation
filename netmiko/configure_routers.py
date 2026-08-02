@@ -21,11 +21,28 @@ import datetime
 import logging
 import yaml
 from netmiko import ConnectHandler
-from netmiko.exceptions import (
-    NetmikoTimeoutException,
-    NetmikoAuthenticationException,
-    SSHException,
-)
+
+# Robust Netmiko & Paramiko Exception Imports with Version Fallbacks
+try:
+    from netmiko.exceptions import NetmikoTimeoutException, NetmikoAuthenticationException
+except ImportError:
+    try:
+        from netmiko.exceptions import NetMikoTimeoutException as NetmikoTimeoutException
+        from netmiko.exceptions import NetMikoAuthenticationException as NetmikoAuthenticationException
+    except ImportError:
+        try:
+            from netmiko import NetmikoTimeoutException, NetmikoAuthenticationException
+        except ImportError:
+            class NetmikoTimeoutException(Exception): pass
+            class NetmikoAuthenticationException(Exception): pass
+
+try:
+    from paramiko.ssh_exception import SSHException
+except ImportError:
+    try:
+        from netmiko.exceptions import SSHException
+    except ImportError:
+        class SSHException(Exception): pass
 
 # ---------------------------------------------------------------------------
 # Setup Timestamped Logging
