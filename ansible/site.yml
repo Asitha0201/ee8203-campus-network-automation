@@ -1,0 +1,20 @@
+---
+# Master Orchestration Playbook for Switch Automation
+# EE8203 - Campus Network Automation
+- name: Configure All Campus Switches (Core, Distribution, Access)
+  hosts: switches
+  gather_facts: no
+  connection: network_cli
+
+  roles:
+    - role: vlans
+      tags: [vlans, baseline]
+
+    - role: stp
+      tags: [stp, baseline]
+
+    - role: trunking
+      tags: [trunking, infrastructure]
+
+    - role: access_ports
+      tags: [access, end_hosts]

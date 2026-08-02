@@ -1,0 +1,12 @@
+---
+# Role: trunking
+- name: Configure trunk interfaces on switches
+  cisco.ios.ios_l2_interfaces:
+    config:
+      - name: "{{ item }}"
+        mode: trunk
+        trunk:
+          native_vlan: 100
+          allowed_vlans: "10,20,30,40,99"
+    state: merged
+  loop: "{{ trunk_interfaces | default([]) }}"

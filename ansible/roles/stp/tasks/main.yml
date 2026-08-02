@@ -1,0 +1,7 @@
+---
+# Role: stp
+- name: Enable Rapid PVST+ Spanning Tree Protocol
+  cisco.ios.ios_config:
+    lines:
+      - spanning-tree mode rapid-pvst
+      - spanning-tree portfast default

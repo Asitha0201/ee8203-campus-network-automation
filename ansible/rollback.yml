@@ -1,0 +1,29 @@
+---
+# Rollback Playbook - Restores switches to baseline configuration
+# EE8203 - Campus Network Automation
+- name: Rollback Switch Configurations
+  hosts: switches
+  gather_facts: no
+  connection: network_cli
+
+  tasks:
+    - name: Remove custom VLANs (Reset to baseline)
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 10
+            state: absent
+          - vlan_id: 20
+            state: absent
+          - vlan_id: 30
+            state: absent
+          - vlan_id: 40
+            state: absent
+        state: deleted
+      ignore_errors: yes
+
+    - name: Reset interface configurations
+      cisco.ios.ios_config:
+        lines:
+          - default interface GigabitEthernet0/1
+          - default interface GigabitEthernet0/2
+      ignore_errors: yes

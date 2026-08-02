@@ -1,0 +1,11 @@
+---
+# Role: access_ports
+- name: Configure access ports for end-host connectivity
+  cisco.ios.ios_l2_interfaces:
+    config:
+      - name: "{{ item.interface }}"
+        mode: access
+        access:
+          vlan: "{{ item.vlan }}"
+    state: merged
+  loop: "{{ access_ports | default([]) }}"
