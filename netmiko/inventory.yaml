@@ -46,14 +46,14 @@ routers:
 
     interfaces:
       - name: FastEthernet0/0
-        description: LINK_TO_R_CORE
+        description: "LINK TO R-CORE"
         mode: static
         ip_address: 10.0.10.2
         subnet_mask: 255.255.255.252
         nat_role: inside
 
       - name: FastEthernet1/0
-        description: WAN_DHCP
+        description: INTERNET
         mode: dhcp
         nat_role: outside
 
@@ -65,7 +65,7 @@ routers:
       default_information_originate: true
 
     nat:
-      acl_name: NAT_INTERNET_EGRESS
+      acl_name: NAT_ALLOWED
       permitted_subnets:
         - "10.10.10.0 0.0.0.255"
         - "10.10.20.0 0.0.0.255"
