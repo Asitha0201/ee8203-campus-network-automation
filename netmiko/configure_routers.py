@@ -129,3 +129,113 @@ def configure_interfaces(conn, device, dry_run):
             dry_run,
         )
 
+def configure_ospf(conn, device, dry_run):
+    ospf = device["ospf"]
+
+    commands = [
+        f"router ospf {ospf['process_id']}",
+        f"router-id {ospf['router_id']}",
+    ]
+
+    markers = commands.copy()
+
+    for network in ospf.get("networks", []):
+        line = f"network {network}"
+        commands.append(line)
+        markers.append(line)
+
+    if ospf.get("default_information_originate"):
+        commands.append("default-information originate")
+        markers.append("default-information originate")
+
+    apply_if_missing(
+        conn,
+        device["hostname"],
+        "OSPF",
+        commands,
+        markers,
+        dry_run,
+    )
+
+
+def configure_nat(conn, device, dry_run):
+    nat = device.get("nat")
+
+    if not nat:
+        return
+
+    acl_cmds = [
+        f"ip access-list standard {nat['acl_name']}"
+    ]
+
+    acl_markers = acl_cmds.copy()
+
+    for subnet in nat["permitted_subnets"]:
+        line = f"permit {subnet}"
+        acl_cmds.append(line)
+        acl_markers.append(line)
+
+    apply_if_missing(
+        conn,
+        device["hostname"],
+        "NAT ACL",
+        acl_cmds,
+        acl_markers,
+        dry_run,
+    )
+
+    overload = (
+        f"ip nat inside source list {nat['acl_name']} "
+        f"interface {nat['outside_interface']} overload"
+    )
+
+    apply_if_missing(
+        conn,
+        device["hostname"],
+        "NAT overload",
+        [overload],
+        [overload],
+        dry_run,
+    )
+
+
+def configure_ssh_acl(conn, device, dry_run):
+    acl = device.get("ssh_acl")
+
+    if not acl:
+        return
+
+    commands = [
+        f"ip access-list extended {acl['name']}"
+    ] + acl["rules"]
+
+    markers = commands.copy()
+
+    apply_if_missing(
+        conn,
+        device["hostname"],
+        "SSH ACL",
+        commands,
+        markers,
+        dry_run,
+    )
+
+    vty = [
+        "line vty 0 15",
+        f"access-class {acl['name']} in",
+        "login local",
+        "transport input ssh",
+    ]
+
+    apply_if_missing(
+        conn,
+        device["hostname"],
+        "VTY policy",
+        vty,
+        [
+            f"access-class {acl['name']} in",
+            "login local",
+            "transport input ssh",
+        ],
+        dry_run,
+    )
