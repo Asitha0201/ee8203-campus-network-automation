@@ -1,0 +1,16 @@
+---
+local_vlans: [30, 99, 100]
+management_ip: 10.99.30.13
+management_mask: 255.255.255.0
+user_svi: { name: Vlan30, ip: 10.10.30.1, mask: 255.255.255.0 }
+routed_uplink: { name: GigabitEthernet0/0, ip: 10.0.3.2, mask: 255.255.255.252 }
+ospf:
+  process_id: 1
+  router_id: 4.4.4.4
+  networks:
+    - "10.0.3.0 0.0.0.3 area 0"
+    - "10.10.30.0 0.0.0.255 area 0"
+    - "10.99.30.0 0.0.0.255 area 0"
+trunk_interfaces:
+  - { name: GigabitEthernet0/1, allowed_vlans: "30,99,100" }
+access_ports: []

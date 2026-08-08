@@ -1,0 +1,12 @@
+---
+local_vlans: [30, 99, 100]
+management_ip: 10.99.30.23
+management_mask: 255.255.255.0
+# EE8203 - Exact File Editing + Tested Commit Workflow Page 3
+management_gateway: 10.99.30.13
+trunk_interfaces:
+  - { name: GigabitEthernet0/0, allowed_vlans: "30,99,100" }
+access_ports:
+  - { interface: GigabitEthernet0/1, vlan: 30 }
+  - { interface: GigabitEthernet0/2, vlan: 30 }
+  - { interface: GigabitEthernet0/3, vlan: 30 }
