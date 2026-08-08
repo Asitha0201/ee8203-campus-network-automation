@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
+netmiko/logs/
+netmiko/backups/
+.env
