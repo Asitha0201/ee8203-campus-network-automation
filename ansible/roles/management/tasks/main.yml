@@ -4,7 +4,6 @@
     parents: interface Vlan99
     lines:
       - "ip address {{ management_ip }} {{ management_mask }}"
-      - no shutdown
 
 - name: Configure access-switch management gateway
   cisco.ios.ios_config:

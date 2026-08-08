@@ -8,5 +8,5 @@
   cisco.ios.ios_config:
     parents: "interface {{ item.interface }}"
     lines:
-      - spanning-tree portfast
+      - spanning-tree portfast edge
   loop: "{{ access_ports | default([]) }}"
