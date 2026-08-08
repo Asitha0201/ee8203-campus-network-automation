@@ -254,6 +254,7 @@ def verify(conn, hostname):
         checks += [
             "show ip nat statistics",
             "show access-lists NAT_INTERNET_EGRESS",
+            "show ip route 0.0.0.0",
         ]
 
     for command in checks:
