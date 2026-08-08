@@ -6,8 +6,9 @@ import sys
 from pathlib import Path
 
 import yaml
-from netmiko import configure_routers
-from netmiko.exceptions import (NetmikoAuthenticationException,
+from netmiko import ConnectHandler
+from netmiko.exceptions import (
+    NetmikoAuthenticationException,
     NetmikoTimeoutException,
 )
 
@@ -239,3 +240,104 @@ def configure_ssh_acl(conn, device, dry_run):
         ],
         dry_run,
     )
+
+
+def verify(conn, hostname):
+    checks = [
+        "show ip interface brief",
+        "show ip ospf neighbor",
+        "show ip route",
+        "show access-lists ACL_SSH_MGMT",
+    ]
+
+    if hostname == "R-EDGE":
+        checks += [
+            "show ip nat statistics",
+            "show access-lists NAT_INTERNET_EGRESS",
+        ]
+
+    for command in checks:
+        log.info(
+            "%s: %s\n%s",
+            hostname,
+            command,
+            conn.send_command(command),
+        )
+
+
+def configure_router(device, dry_run):
+    conn = ConnectHandler(**params(device))
+
+    try:
+        conn.enable()
+
+        backup(conn, device["hostname"])
+
+        configure_interfaces(conn, device, dry_run)
+        configure_ospf(conn, device, dry_run)
+        configure_nat(conn, device, dry_run)
+        configure_ssh_acl(conn, device, dry_run)
+
+        if not dry_run:
+            conn.save_config()
+
+        verify(conn, device["hostname"])
+
+        return True
+
+    finally:
+        conn.disconnect()
+
+
+def main():
+    args = parse_args()
+
+    routers = load_inventory().get("routers", [])
+
+    if args.device:
+        routers = [
+            r for r in routers
+            if r["hostname"] == args.device
+        ]
+
+    if not routers:
+        raise SystemExit(f"Unknown router: {args.device}")
+
+    success = 0
+
+    for device in routers:
+        try:
+            if configure_router(device, args.dry_run):
+                success += 1
+
+        except NetmikoAuthenticationException:
+            log.error(
+                "%s: authentication failed",
+                device["hostname"],
+            )
+
+        except NetmikoTimeoutException:
+            log.error(
+                "%s: SSH timeout",
+                device["hostname"],
+            )
+
+        except Exception as exc:
+            log.exception(
+                "%s: failed: %s",
+                device["hostname"],
+                exc,
+            )
+
+    log.info(
+        "Complete: %s/%s routers successful",
+        success,
+        len(routers),
+    )
+
+    if success != len(routers):
+        raise SystemExit(1)
+
+
+if __name__ == "__main__":
+    main()
