@@ -1,21 +1,10 @@
 ---
-# Global variables for all switches
-ansible_connection: network_cli
-ansible_network_os: cisco.ios.ios
-ansible_become: yes
-ansible_become_method: enable
+native_vlan: 100
 
-# Standard Campus VLAN definitions
-vlan_list:
-  - id: 10
-    name: VLAN_DEIE
-  - id: 20
-    name: VLAN_DCEE
-  - id: 30
-    name: VLAN_DMME
-  - id: 40
-    name: VLAN_DIS
-  - id: 99
-    name: MGMT
-  - id: 100
-    name: NATIVE
+campus_vlan_names:
+  10: "VLAN DEIE"
+  20: "VLAN DCEE"
+  30: "VLAN_DMME"
+  40: "VLAN_DIS"
+  99: "MGMT"
+  100: "NATIVE"

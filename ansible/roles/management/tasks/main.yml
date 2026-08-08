@@ -1,0 +1,13 @@
+---
+- name: Configure VLAN 99 management SVI
+  cisco.ios.ios_config:
+    parents: interface Vlan99
+    lines:
+      - "ip address {{ management_ip }} {{ management_mask }}"
+      - no shutdown
+
+- name: Configure access-switch management gateway
+  cisco.ios.ios_config:
+    lines:
+      - "ip default-gateway {{ management_gateway }}"
+  when: management_gateway is defined

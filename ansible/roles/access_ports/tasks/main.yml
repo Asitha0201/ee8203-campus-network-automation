@@ -1,6 +1,5 @@
 ---
-# Role: access_ports
-- name: Configure access ports for end-host connectivity
+- name: Configure declared end-host access ports
   cisco.ios.ios_l2_interfaces:
     config:
       - name: "{{ item.interface }}"

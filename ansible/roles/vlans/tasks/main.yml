@@ -1,9 +1,8 @@
 ---
-# Role: vlans
-- name: Ensure standard campus VLANs exist
+- name: Ensure the VLANs required by this switch exist
   cisco.ios.ios_vlans:
     config:
-      - vlan_id: "{{ item.id }}"
-        name: "{{ item.name }}"
+      - vlan_id: "{{ item }}"
+        name: "{{ campus_vlan_names[item] }}"
     state: merged
-  loop: "{{ vlan_list }}"
+  loop: "{{ local_vlans }}"

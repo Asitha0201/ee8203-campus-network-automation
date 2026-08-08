@@ -1,7 +1,12 @@
 ---
-# Role: stp
-- name: Enable Rapid PVST+ Spanning Tree Protocol
+- name: Use Rapid-PVST
   cisco.ios.ios_config:
     lines:
       - spanning-tree mode rapid-pvst
-      - spanning-tree portfast default
+
+- name: Enable PortFast only on end-host ports
+  cisco.ios.ios_config:
+    parents: "interface {{ item.interface }}"
+    lines:
+      - spanning-tree portfast
+  loop: "{{ access_ports | default([]) }}"

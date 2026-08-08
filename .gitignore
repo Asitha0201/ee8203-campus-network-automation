@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 .DS_Store
 *.log
+# Local Ansible credentials
+ansible/group_vars/credentials.yml
+*.retry
+.ansible/
 netmiko/logs/
 netmiko/backups/
 .env

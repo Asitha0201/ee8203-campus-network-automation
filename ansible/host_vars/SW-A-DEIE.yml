@@ -1,0 +1,11 @@
+---
+local_vlans: [10, 99, 100]
+management_ip: 10.99.10.21
+management_mask: 255.255.255.0
+management_gateway: 10.99.10.11
+trunk_interfaces:
+  - { name: GigabitEthernet0/0, allowed_vlans: "10,99,100" }
+access_ports:
+  - { interface: GigabitEthernet0/1, vlan: 10 }
+  - { interface: GigabitEthernet0/2, vlan: 10 }
+  - { interface: GigabitEthernet0/3, vlan: 10 }
