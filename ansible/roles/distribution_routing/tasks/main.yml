@@ -1,0 +1,30 @@
+---
+- name: Configure department gateway SVI
+  cisco.ios.ios_config:
+    parents: "interface {{ user_svi.name }}"
+    lines:
+      - "ip address {{ user_svi.ip }} {{ user_svi.mask }}"
+      - no shutdown
+
+- name: Configure routed uplink to SW-CORE
+  cisco.ios.ios_config:
+    parents: "interface {{ routed_uplink.name }}"
+    lines:
+      - no switchport
+      - "ip address {{ routed_uplink.ip }} {{ routed_uplink.mask }}"
+      - no shutdown
+
+- name: Configure OSPF on distribution switch
+  cisco.ios.ios_config:
+    parents: "router ospf {{ ospf.process_id }}"
+    lines:
+      - "router-id {{ ospf.router_id }}"
+      - passive-interface default
+      - "no passive-interface {{ routed_uplink.name }}"
+
+- name: Advertise distribution networks in OSPF
+  cisco.ios.ios_config:
+    parents: "router ospf {{ ospf.process_id }}"
+    lines:
+      - "network {{ item }}"
+  loop: "{{ ospf.networks }}"
