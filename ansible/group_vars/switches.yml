@@ -2,8 +2,8 @@
 native_vlan: 100
 
 campus_vlan_names:
-  10: "VLAN DEIE"
-  20: "VLAN DCEE"
+  10: "VLAN_DEIE"
+  20: "VLAN_DCEE"
   30: "VLAN_DMME"
   40: "VLAN_DIS"
   99: "MGMT"
