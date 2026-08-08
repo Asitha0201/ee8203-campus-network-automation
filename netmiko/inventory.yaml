@@ -1,172 +1,91 @@
-# Device Inventory for Netmiko Python Automation
-# Project: EE8203 - Campus Network Automation
-# Management Plane: VLAN 99 (10.99.99.0/24)
-
+---
 global_vars:
-  snmp_community: "campus_snmp"
-  zabbix_server_ip: "10.99.99.100"
-  domain_name: "foe.ruh.ac.lk"
+  snmp_community: campus_snmp
+  zabbix_server_ip: 10.99.99.100
 
-devices:
-  - hostname: "SW-CORE"
-    ip: "10.99.99.1"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "core_switch"
-    acls:
-      - name: "ACL_DEIE_IN"
-        type: "extended"
-        rules:
-          - "permit ip 10.10.10.0 0.0.0.255 10.10.40.0 0.0.0.255"
-          - "permit udp host 10.99.99.100 any eq 161"
-          - "permit tcp 10.99.99.0 0.0.0.255 any eq 22"
-          - "permit ip any any"
-        apply_to:
-          - interface: "vlan 10"
-            direction: "in"
+routers:
+  - hostname: R-CORE
+    host: 10.0.0.2
+    device_type: cisco_ios
+    username: admin
+    password_env: admin
+    secret_env: admin
 
-      - name: "ACL_DCEE_IN"
-        type: "extended"
-        rules:
-          - "permit tcp 10.10.20.0 0.0.0.255 10.10.40.0 0.0.0.255 eq 80"
-          - "permit tcp 10.10.20.0 0.0.0.255 10.10.40.0 0.0.0.255 eq 443"
-          - "deny ip 10.10.20.0 0.0.0.255 10.10.10.0 0.0.0.255"
-          - "deny ip 10.10.20.0 0.0.0.255 10.10.40.0 0.0.0.255"
-          - "permit udp host 10.99.99.100 any eq 161"
-          - "permit tcp 10.99.99.0 0.0.0.255 any eq 22"
-          - "permit ip any any"
-        apply_to:
-          - interface: "vlan 20"
-            direction: "in"
-
-      - name: "ACL_DMME_IN"
-        type: "extended"
-        rules:
-          - "deny ip 10.10.30.0 0.0.0.255 10.10.40.0 0.0.0.255"
-          - "deny ip 10.10.30.0 0.0.0.255 10.10.20.0 0.0.0.255"
-          - "permit udp host 10.99.99.100 any eq 161"
-          - "permit tcp 10.99.99.0 0.0.0.255 any eq 22"
-          - "permit ip any any"
-        apply_to:
-          - interface: "vlan 30"
-            direction: "in"
-
-  - hostname: "R-CORE"
-    ip: "10.99.99.2"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "cisco123"
-    secret: "cisco123"
-    role: "router"
     interfaces:
-      - name: "GigabitEthernet0/0"
-        description: "Link to R-EDGE"
-        ip_address: "10.0.0.1"
-        subnet_mask: "255.255.255.252"
-      - name: "GigabitEthernet0/1"
-        description: "Link to SW-CORE"
-        ip_address: "10.0.0.5"
-        subnet_mask: "255.255.255.252"
-      - name: "GigabitEthernet0/2.99"
-        description: "Management Subnet VLAN 99"
-        ip_address: "10.99.99.2"
-        subnet_mask: "255.255.255.0"
+      - name: FastEthernet1/0
+        description: LINK_TO_SW_CORE
+        mode: static
+        ip_address: 10.0.0.2
+        subnet_mask: 255.255.255.252
+
+      - name: FastEthernet0/0
+        description: LINK_TO_R_EDGE
+        mode: static
+        ip_address: 10.0.10.1
+        subnet_mask: 255.255.255.252
+
     ospf:
       process_id: 1
-      router_id: "1.1.1.1"
+      router_id: 5.5.5.5
       networks:
         - "10.0.0.0 0.0.0.3 area 0"
-        - "10.0.0.4 0.0.0.3 area 0"
-        - "10.99.99.0 0.0.0.255 area 0"
+        - "10.0.10.0 0.0.0.3 area 0"
 
-  - hostname: "R-EDGE"
-    ip: "10.0.0.2"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "cisco123"
-    secret: "cisco123"
-    role: "router"
-    static_routes:
-      - "0.0.0.0 0.0.0.0 203.0.113.1"
+    ssh_acl:
+      name: ACL_SSH_MGMT
+      rules:
+        - "permit tcp 10.99.99.0 0.0.0.255 any eq 22"
+        - "deny tcp any any eq 22 log"
+
+  - hostname: R-EDGE
+    host: 10.0.10.2
+    device_type: cisco_ios
+    username: admin
+    password_env: admin
+    secret_env: admin
+
     interfaces:
-      - name: "GigabitEthernet0/0"
-        description: "Link to R-CORE"
-        ip_address: "10.0.0.2"
-        subnet_mask: "255.255.255.252"
-      - name: "GigabitEthernet0/1"
-        description: "WAN / Internet Connection"
-        ip_address: "203.0.113.2"
-        subnet_mask: "255.255.255.252"
+      - name: FastEthernet0/0
+        description: LINK_TO_R_CORE
+        mode: static
+        ip_address: 10.0.10.2
+        subnet_mask: 255.255.255.252
+        nat_role: inside
+
+      - name: FastEthernet1/0
+        description: WAN_DHCP
+        mode: dhcp
+        nat_role: outside
+
     ospf:
       process_id: 1
-      router_id: "2.2.2.2"
+      router_id: 6.6.6.6
       networks:
-        - "10.0.0.0 0.0.0.3 area 0"
-        - "10.99.99.0 0.0.0.255 area 0"
+        - "10.0.10.0 0.0.0.3 area 0"
       default_information_originate: true
+
     nat:
-      outside_interface: "GigabitEthernet0/1"
-      inside_interfaces:
-        - "GigabitEthernet0/0"
-      acl_name: "NAT_INTERNET_EGRESS"
+      acl_name: NAT_INTERNET_EGRESS
       permitted_subnets:
         - "10.10.10.0 0.0.0.255"
         - "10.10.20.0 0.0.0.255"
+      inside_interface: FastEthernet0/0
+      outside_interface: FastEthernet1/0
 
-  - hostname: "SW-D-DEIE"
-    ip: "10.99.99.10"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "cisco123"
-    secret: "cisco123"
-    role: "switch"
+    ssh_acl:
+      name: ACL_SSH_MGMT
+      rules:
+        - "permit tcp 10.99.99.0 0.0.0.255 any eq 22"
+        - "deny tcp any any eq 22 log"
 
-  - hostname: "SW-A-DEIE"
-    ip: "10.99.99.15"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "cisco123"
-    secret: "cisco123"
-    role: "switch"
-
-  - hostname: "SW-D-DCEE"
-    ip: "10.99.99.20"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "switch"
-
-  - hostname: "SW-A-DCEE"
-    ip: "10.99.99.25"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "switch"
-
-  - hostname: "SW-D-DMME"
-    ip: "10.99.99.30"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "switch"
-
-  - hostname: "SW-A-DMME"
-    ip: "10.99.99.35"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "switch"
-
-  - hostname: "SW-A-DIS"
-    ip: "10.99.99.45"
-    device_type: "cisco_ios"
-    username: "admin"
-    password: "admin"
-    secret: "admin"
-    role: "switch"
+snmp_targets:
+  - { hostname: SW-CORE, host: 10.99.99.1, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DEIE, host: 10.99.10.11, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DEIE, host: 10.99.10.21, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DCEE, host: 10.99.20.12, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DCEE, host: 10.99.20.22, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DMME, host: 10.99.30.13, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DMME, host: 10.99.30.23, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DIS, host: 10.99.99.24, password_env: admin, secret_env: admin }
+  - { hostname: R-CORE, host: 10.0.0.2, password_env: admin, secret_env: admin }
+  - { hostname: R-EDGE, host: 10.0.10.2, password_env: admin, secret_env: admin }

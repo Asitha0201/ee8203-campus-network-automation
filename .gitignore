@@ -6,3 +6,6 @@ __pycache__/
 ansible/group_vars/credentials.yml
 *.retry
 .ansible/
+netmiko/logs/
+netmiko/backups/
+.env
