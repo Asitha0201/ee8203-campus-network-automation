@@ -8,8 +8,8 @@ routers:
     host: 10.0.0.2
     device_type: cisco_ios
     username: admin
-    password_env: RCORE_PASSWORD
-    secret_env: RCORE_ENABLE
+    password_env: admin
+    secret_env: admin
 
     interfaces:
       - name: FastEthernet1/0
@@ -41,8 +41,8 @@ routers:
     host: 10.0.10.2
     device_type: cisco_ios
     username: admin
-    password_env: REDGE_PASSWORD
-    secret_env: REDGE_ENABLE
+    password_env: admin
+    secret_env: admin
 
     interfaces:
       - name: FastEthernet0/0
@@ -79,13 +79,13 @@ routers:
         - "deny tcp any any eq 22 log"
 
 snmp_targets:
-  - { hostname: SW-CORE, host: 10.99.99.1, password_env: SWCORE_PASSWORD, secret_env: SWCORE_ENABLE }
-  - { hostname: SW-D-DEIE, host: 10.99.10.11, password_env: DEIE_D_PASSWORD, secret_env: DEIE_D_ENABLE }
-  - { hostname: SW-A-DEIE, host: 10.99.10.21, password_env: DEIE_A_PASSWORD, secret_env: DEIE_A_ENABLE }
-  - { hostname: SW-D-DCEE, host: 10.99.20.12, password_env: DCEE_D_PASSWORD, secret_env: DCEE_D_ENABLE }
-  - { hostname: SW-A-DCEE, host: 10.99.20.22, password_env: DCEE_A_PASSWORD, secret_env: DCEE_A_ENABLE }
-  - { hostname: SW-D-DMME, host: 10.99.30.13, password_env: DMME_D_PASSWORD, secret_env: DMME_D_ENABLE }
-  - { hostname: SW-A-DMME, host: 10.99.30.23, password_env: DMME_A_PASSWORD, secret_env: DMME_A_ENABLE }
-  - { hostname: SW-A-DIS, host: 10.99.99.24, password_env: DIS_A_PASSWORD, secret_env: DIS_A_ENABLE }
-  - { hostname: R-CORE, host: 10.0.0.2, password_env: RCORE_PASSWORD, secret_env: RCORE_ENABLE }
-  - { hostname: R-EDGE, host: 10.0.10.2, password_env: REDGE_PASSWORD, secret_env: REDGE_ENABLE }
+  - { hostname: SW-CORE, host: 10.99.99.1, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DEIE, host: 10.99.10.11, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DEIE, host: 10.99.10.21, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DCEE, host: 10.99.20.12, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DCEE, host: 10.99.20.22, password_env: admin, secret_env: admin }
+  - { hostname: SW-D-DMME, host: 10.99.30.13, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DMME, host: 10.99.30.23, password_env: admin, secret_env: admin }
+  - { hostname: SW-A-DIS, host: 10.99.99.24, password_env: admin, secret_env: admin }
+  - { hostname: R-CORE, host: 10.0.0.2, password_env: admin, secret_env: admin }
+  - { hostname: R-EDGE, host: 10.0.10.2, password_env: admin, secret_env: admin }
