@@ -1,0 +1,17 @@
+---
+- name: Verify automated switch state
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: Collect validation output
+      cisco.ios.ios_command:
+        commands:
+          - show ip interface brief
+          - show vlan brief
+          - show interfaces trunk
+          - show spanning-tree summary
+      register: result
+
+    - name: Display validation output
+      ansible.builtin.debug:
+        var: result.stdout_lines
