@@ -162,7 +162,6 @@ def configure_interfaces(conn, device, dry_run):
 
         markers = [
             f"interface {intf['name']}",
-            f"description {intf['description']}",
         ]
 
         if intf["mode"] == "dhcp":
@@ -306,7 +305,9 @@ def configure_ssh_acl(conn, device, dry_run):
     )
 
 
-def verify(conn, hostname):
+def verify(conn, device):
+    hostname = device["hostname"]
+
     checks = [
         "show ip interface brief",
         "show ip ospf neighbor",
@@ -314,10 +315,11 @@ def verify(conn, hostname):
         "show access-lists ACL_SSH_MGMT",
     ]
 
-    if hostname == "R-EDGE":
+    nat = device.get("nat")
+    if nat:
         checks += [
             "show ip nat statistics",
-            "show access-lists NAT_INTERNET_EGRESS",
+            f"show access-lists {nat['acl_name']}",
             "show ip route 0.0.0.0",
         ]
 
@@ -346,7 +348,7 @@ def configure_router(device, dry_run):
         if not dry_run:
             conn.save_config()
 
-        verify(conn, device["hostname"])
+        verify(conn, device)
 
         return True
 
