@@ -2,12 +2,13 @@ import argparse
 import datetime as dt
 import logging
 import os
+import re
 import sys
 from pathlib import Path
 
 import yaml
-from netmiko import ConnectHandler
-from netmiko.exceptions import (
+from netmiko import (
+    ConnectHandler,
     NetmikoAuthenticationException,
     NetmikoTimeoutException,
 )
@@ -48,10 +49,16 @@ def load_inventory():
 
 
 def env_value(name):
+    """Return a required credential from an environment variable."""
     value = os.getenv(name)
+
     if not value:
-        raise RuntimeError(f"Required environment variable {name} is not set")
+        raise RuntimeError(
+            f"Required environment variable {name} is not set"
+        )
+
     return value
+
 
 def params(device):
     return {
@@ -67,6 +74,60 @@ def params(device):
     }
 
 
+def normalize_ios_line(line: str) -> str:
+    """Normalize IOS whitespace for reliable line comparisons."""
+    if not line:
+        return ""
+
+    return re.sub(
+        r"\s+",
+        " ",
+        line.strip(),
+    )
+
+
+def normalize_acl_line(line: str) -> str:
+    """
+    Normalize an ACL rule and remove a leading IOS ACL
+    sequence number when one is present.
+    """
+    line = normalize_ios_line(line)
+
+    return re.sub(
+        r"^\d+\s+",
+        "",
+        line,
+    )
+
+
+def is_line_in_config(
+    marker: str,
+    running_config: str,
+    is_acl: bool = False,
+) -> bool:
+    """Check whether one normalized IOS line exists."""
+
+    if is_acl:
+        expected = normalize_acl_line(marker)
+    else:
+        expected = normalize_ios_line(marker)
+
+    if not expected:
+        return True
+
+    for line in running_config.splitlines():
+
+        if is_acl:
+            actual = normalize_acl_line(line)
+        else:
+            actual = normalize_ios_line(line)
+
+        if actual == expected:
+            return True
+
+    return False
+
+
 def backup(conn, hostname):
     running = conn.send_command("show running-config")
     path = BACKUP_DIR / f"{hostname}_{STAMP}.cfg"
@@ -74,9 +135,9 @@ def backup(conn, hostname):
     log.info("%s: backup saved to %s", hostname, path)
 
 
-def apply_if_missing(conn, hostname, label, commands, markers, dry_run):
+def apply_if_missing(conn, hostname, label, commands, markers, dry_run, is_acl=False):
     running = conn.send_command("show running-config")
-    missing = [m for m in markers if m not in running]
+    missing = [m for m in markers if not is_line_in_config(m, running, is_acl=is_acl)]
 
     if not missing:
         log.info("%s: %s already correct", hostname, label)
@@ -129,6 +190,7 @@ def configure_interfaces(conn, device, dry_run):
             markers,
             dry_run,
         )
+
 
 def configure_ospf(conn, device, dry_run):
     ospf = device["ospf"]
@@ -183,6 +245,7 @@ def configure_nat(conn, device, dry_run):
         acl_cmds,
         acl_markers,
         dry_run,
+        is_acl=True,
     )
 
     overload = (
@@ -219,6 +282,7 @@ def configure_ssh_acl(conn, device, dry_run):
         commands,
         markers,
         dry_run,
+        is_acl=True,
     )
 
     vty = [
