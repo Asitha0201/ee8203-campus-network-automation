@@ -1,3 +1,4 @@
+import argparse
 import datetime as dt
 import logging
 import os
@@ -35,6 +36,23 @@ logging.basicConfig(
 )
 
 log = logging.getLogger("snmp")
+
+
+def parse_args():
+    """Parse CLI arguments for SNMP automation."""
+    parser = argparse.ArgumentParser(
+        description="Automate SNMPv2c configuration across campus network devices."
+    )
+    parser.add_argument(
+        "--device",
+        help="Limit SNMP configuration to one exact device (e.g. SW-A-DCEE)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview configuration changes without applying them",
+    )
+    return parser.parse_args()
 
 
 def load_inventory():
@@ -104,6 +122,7 @@ def configure_snmp(
     hostname,
     community,
     zabbix_ip,
+    dry_run=False,
 ):
     """
     Add only missing SNMP configuration lines.
@@ -137,6 +156,15 @@ def configure_snmp(
         )
         return False
 
+    if dry_run:
+        log.info(
+            "%s: DRY RUN - would apply %s missing SNMP command(s): %s",
+            hostname,
+            len(missing),
+            missing,
+        )
+        return True
+
     log.info(
         "%s: applying %s missing SNMP command(s)",
         hostname,
@@ -151,6 +179,8 @@ def configure_snmp(
 
 def main():
 
+    args = parse_args()
+
     inventory = load_inventory()
 
     global_vars = inventory["global_vars"]
@@ -159,6 +189,12 @@ def main():
     zabbix_ip = global_vars["zabbix_server_ip"]
 
     devices = inventory.get("snmp_targets", [])
+
+    if args.device:
+        devices = [d for d in devices if d["hostname"] == args.device]
+        if not devices:
+            log.error("Unknown SNMP target: %s", args.device)
+            raise SystemExit(f"Unknown SNMP target: {args.device}")
 
     success_count = 0
 
@@ -180,16 +216,18 @@ def main():
             try:
                 conn.enable()
 
-                backup_running_config(
-                    conn,
-                    hostname,
-                )
+                if not args.dry_run:
+                    backup_running_config(
+                        conn,
+                        hostname,
+                    )
 
                 changed = configure_snmp(
                     conn,
                     hostname,
                     community,
                     zabbix_ip,
+                    dry_run=args.dry_run,
                 )
 
                 output = conn.send_command(
@@ -198,9 +236,10 @@ def main():
                 )
 
                 log.info(
-                    "%s: changed=%s\n%s",
+                    "%s: changed=%s (dry_run=%s)\n%s",
                     hostname,
                     changed,
+                    args.dry_run,
                     output,
                 )
 
