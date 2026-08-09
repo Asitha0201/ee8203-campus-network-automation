@@ -3,6 +3,7 @@ local_vlans: [20, 99, 100]
 management_ip: 10.99.20.12
 management_mask: 255.255.255.0
 user_svi: { name: Vlan20, ip: 10.10.20.1, mask: 255.255.255.0 }
+user_ospf_network: "10.10.20.0 0.0.0.255 area 0"
 routed_uplink: { name: GigabitEthernet0/0, ip: 10.0.2.2, mask: 255.255.255.252 }
 ospf:
   process_id: 1

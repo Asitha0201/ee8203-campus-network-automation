@@ -1,26 +1,80 @@
 ---
-- name: Roll back one or more access switches while preserving management
+# ==============================================================================
+# EE8203 Campus Network Automation - Safe Management-Preserving Rollback
+# ==============================================================================
+#
+# RECOVERY CONCEPTS & DESIGN:
+# 1. REMOTE ANSIBLE ROLLBACK (This Playbook):
+#    Reverts automation-added user/data configuration (access ports, user SVIs,
+#    user OSPF subnets, data VLANs on trunks) while strictly preserving the
+#    management plane (VLAN 99 SVI, management IP/gateway, native VLAN 100 on
+#    trunks, routed core link, OSPF management reachability, and SSH access).
+#
+# 2. FULL DEVICE WIPE / CLEAN-STATE DEMO (Lecturer Reset):
+#    If a lecturer wipes a device to factory default (erasing management),
+#    recovery is performed via GNS3 console / saved snapshot, followed by replaying
+#    site.yml. This playbook is intended for remote Ansible rollback over SSH.
+# ==============================================================================
+
+- name: Enforce safety limit check for rollback execution
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: Verify explicit --limit was specified
+      ansible.builtin.assert:
+        that:
+          - "ansible_limit is defined"
+          - "ansible_limit != ''"
+          - "ansible_limit != 'all'"
+          - "ansible_limit != 'switches'"
+        fail_msg: "SAFETY GUARD: You MUST specify an explicit --limit (e.g. --limit SW-A-DEIE) when executing rollback.yml!"
+      run_once: true
+
+- name: Roll back access switches while preserving management plane
   hosts: access
   gather_facts: false
   tasks:
-    - name: Reset declared end-host ports
+    - name: Reset declared end-host access ports to baseline
       cisco.ios.ios_config:
         lines:
           - "default interface {{ item.interface }}"
       loop: "{{ access_ports | default([]) }}"
-      
-    - name: Reset declared trunk ports
-      cisco.ios.ios_config:
-        lines:
-          - "default interface {{ item.name }}"
+
+    - name: Revert trunk interfaces to management-only baseline (VLAN 99, 100)
+      cisco.ios.ios_l2_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            mode: trunk
+            trunk:
+              native_vlan: "{{ native_vlan }}"
+              allowed_vlans: "99,100"
+        state: replaced
       loop: "{{ trunk_interfaces | default([]) }}"
 
-- name: Roll back one or more distribution switches while preserving VLAN99
+- name: Roll back distribution switches while preserving management plane
   hosts: distribution
   gather_facts: false
   tasks:
-    - name: Reset the access-facing trunk only
+    - name: Revert access-facing trunks to management-only baseline (VLAN 99, 100)
+      cisco.ios.ios_l2_interfaces:
+        config:
+          - name: "{{ item.name }}"
+            mode: trunk
+            trunk:
+              native_vlan: "{{ native_vlan }}"
+              allowed_vlans: "99,100"
+        state: replaced
+      loop: "{{ trunk_interfaces | default([]) }}"
+
+    - name: Remove department user gateway SVI
       cisco.ios.ios_config:
         lines:
-          - "default interface {{ item.name }}"
-      loop: "{{ trunk_interfaces | default([]) }}"
+          - "no interface {{ user_svi.name }}"
+      when: user_svi is defined and user_svi.name is defined
+
+    - name: Remove department user network from OSPF
+      cisco.ios.ios_config:
+        parents: "router ospf {{ ospf.process_id }}"
+        lines:
+          - "no network {{ user_ospf_network }}"
+      when: user_ospf_network is defined
