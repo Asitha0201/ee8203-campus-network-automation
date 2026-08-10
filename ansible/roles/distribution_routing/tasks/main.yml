@@ -26,3 +26,16 @@
     lines:
       - "network {{ item }}"
   loop: "{{ ospf.networks }}"
+
+- name: Configure DHCP relay on department gateway SVI
+  cisco.ios.ios_config:
+    parents: "interface {{ user_svi.name }}"
+    lines:
+      - "ip helper-address {{ dhcp_server_ip }}"
+
+- name: Permit DHCP client bootstrap traffic through department ACL
+  cisco.ios.ios_config:
+    parents: "ip access-list extended {{ user_acl_name }}"
+    lines:
+      - "permit udp any eq bootpc any eq bootps"
+    match: line

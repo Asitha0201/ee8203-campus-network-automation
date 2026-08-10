@@ -15,3 +15,4 @@ ospf:
 trunk_interfaces:
   - { name: GigabitEthernet0/1, allowed_vlans: "10,99,100" }
 access_ports: []
+user_acl_name: ACL_DEIE_IN
