@@ -1,7 +1,3 @@
-==============================================================================
-EE8203 CAMPUS NETWORK AUTOMATION — ANSIBLE DEMO CHEAT SHEET (a.txt)
-==============================================================================
-
 1. NAVIGATION & PRE-CHECKS
 ------------------------------------------------------------------------------
 cd ~/ee8203-campus-network-automation/ansible
@@ -38,7 +34,7 @@ ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE --check --diff
 ansible-playbook -i hosts.yml site.yml --limit SW-D-DEIE --check --diff
 
 
-4. RECOVERY & ROLLBACK PLAYBOOK DEMO (Management-Preserving Baseline)
+4. RECOVERY & ROLLBACK PLAYBOOK 
 ------------------------------------------------------------------------------
 # Safety Guard Assertion Test (Must FAIL immediately without --limit)
 ansible-playbook -i hosts.yml rollback.yml
@@ -56,7 +52,7 @@ ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE
 ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE --check --diff
 
 
-5. AD-HOC VERIFICATION COMMANDS (Fetch Live Running Configs & States)
+5. VERIFICATION COMMANDS
 ------------------------------------------------------------------------------
 # Capture live running config from SW-A-DEIE
 ansible SW-A-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show running-config'"
@@ -72,9 +68,3 @@ ansible SW-D-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show ip os
 
 # Check IP interfaces on SW-D-DEIE
 ansible SW-D-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show ip interface brief'"
-
-
-6. OFFLINE SYNTAX & YAML PARSING CHECKS
-------------------------------------------------------------------------------
-# Validate all Ansible YAML syntax
-python -c "import yaml; from pathlib import Path; [yaml.safe_load(p.open(encoding='utf-8')) for p in Path('ansible').rglob('*.yml')]; print('ANSIBLE YAML OK')"
