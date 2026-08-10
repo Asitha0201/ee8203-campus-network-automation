@@ -1,0 +1,93 @@
+==============================================================================
+EE8203 CAMPUS NETWORK AUTOMATION — NETMIKO DEMO CHEAT SHEET (a.txt)
+==============================================================================
+
+1. NAVIGATION & DIRECTORY PREPARATION
+------------------------------------------------------------------------------
+cd ~/ee8203-campus-network-automation/netmiko
+
+# Export credentials to environment if needed
+export RCORE_PASSWORD=admin
+export RCORE_ENABLE=admin
+export REDGE_PASSWORD=admin
+export REDGE_ENABLE=admin
+export SWCORE_PASSWORD=admin
+export SWCORE_ENABLE=admin
+
+
+2. HELP COMMAND DEMO (Proves non-destructive CLI parsing)
+------------------------------------------------------------------------------
+python configure_routers.py --help
+python configure_snmp.py --help
+
+
+3. DRY-RUN PREVIEWS (Proves missing-command detection without altering state)
+------------------------------------------------------------------------------
+# R-CORE Router Dry-Run
+python configure_routers.py --device R-CORE --dry-run
+
+# R-EDGE Router Dry-Run
+python configure_routers.py --device R-EDGE --dry-run
+
+# Single Switch SNMP Dry-Run
+python configure_snmp.py --device SW-A-DCEE --dry-run
+
+
+4. REAL ROUTER AUTOMATION RUNS (First Run — Applies missing config)
+------------------------------------------------------------------------------
+# Configure R-CORE
+python configure_routers.py --device R-CORE
+
+# Configure R-EDGE
+python configure_routers.py --device R-EDGE
+
+# Run all routers at once
+python configure_routers.py
+
+
+5. SECOND RUN IDEMPOTENCY CHECKS (Proves zero duplicate commands / "already correct")
+------------------------------------------------------------------------------
+# Second run on R-CORE (Must output "already correct")
+python configure_routers.py --device R-CORE
+
+# Second run on R-EDGE (Must output "already correct")
+python configure_routers.py --device R-EDGE
+
+# Second run all routers
+python configure_routers.py
+
+
+6. CAMPUS-WIDE SNMP AUTOMATION PUSH (SNMPv2c community + Zabbix Trap IP)
+------------------------------------------------------------------------------
+# Single device SNMP configuration
+python configure_snmp.py --device SW-A-DCEE
+
+# Single device SNMP second-run idempotency check
+python configure_snmp.py --device SW-A-DCEE
+
+# Campus-wide SNMP push across all 10 devices
+python configure_snmp.py
+
+
+7. LOGS AND CONFIGURATION BACKUP INSPECTION
+------------------------------------------------------------------------------
+# List generated pre-change backups
+ls -la backups/
+
+# List generated execution logs
+ls -la logs/
+
+# View latest router log output
+cat $(ls -t logs/routers_*.log | head -n 1)
+
+# View latest SNMP log output
+cat $(ls -t logs/snmp_*.log | head -n 1)
+
+
+8. OFFLINE SYNTAX & INVENTORY CHECKS
+------------------------------------------------------------------------------
+# Python compilation test
+python -m py_compile configure_routers.py configure_snmp.py
+
+# YAML inventory structure check
+python -c "import yaml; data=yaml.safe_load(open('inventory.yaml')); print('Routers:', [r['hostname'] for r in data['routers']]); print('SNMP targets:', len(data['snmp_targets']))"

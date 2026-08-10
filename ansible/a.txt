@@ -1,0 +1,80 @@
+==============================================================================
+EE8203 CAMPUS NETWORK AUTOMATION — ANSIBLE DEMO CHEAT SHEET (a.txt)
+==============================================================================
+
+1. NAVIGATION & PRE-CHECKS
+------------------------------------------------------------------------------
+cd ~/ee8203-campus-network-automation/ansible
+
+# Test Ansible management connectivity to all switches over VLAN 99
+ansible all -m ping -i hosts.yml
+
+# Verify playbook syntax
+ansible-playbook -i hosts.yml site.yml --syntax-check
+ansible-playbook -i hosts.yml rollback.yml --syntax-check
+
+
+2. PLAYBOOK RUNS (FIRST RUN — Applies desired L2/L3 configuration)
+------------------------------------------------------------------------------
+# Run full site playbook against all 7 switches
+ansible-playbook -i hosts.yml site.yml
+
+# Run against a single access switch (e.g. SW-A-DEIE)
+ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE --diff
+
+# Run against distribution switches only
+ansible-playbook -i hosts.yml site.yml --limit distribution --diff
+
+
+3. CHECK MODE & IDEMPOTENCY DEMO (Must return changed=0 failed=0)
+------------------------------------------------------------------------------
+# Full network idempotency check across all switches
+ansible-playbook -i hosts.yml site.yml --check
+
+# Single switch idempotency check with diff preview
+ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE --check --diff
+
+# Single distribution switch idempotency check
+ansible-playbook -i hosts.yml site.yml --limit SW-D-DEIE --check --diff
+
+
+4. RECOVERY & ROLLBACK PLAYBOOK DEMO (Management-Preserving Baseline)
+------------------------------------------------------------------------------
+# Safety Guard Assertion Test (Must FAIL immediately without --limit)
+ansible-playbook -i hosts.yml rollback.yml
+
+# Check-mode rollback preview on pilot switch
+ansible-playbook -i hosts.yml rollback.yml --limit SW-A-DEIE --check --diff
+
+# Execute real rollback on pilot switch
+ansible-playbook -i hosts.yml rollback.yml --limit SW-A-DEIE
+
+# Replay site.yml to rebuild switch state after rollback
+ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE
+
+# Verify idempotency after rebuild
+ansible-playbook -i hosts.yml site.yml --limit SW-A-DEIE --check --diff
+
+
+5. AD-HOC VERIFICATION COMMANDS (Fetch Live Running Configs & States)
+------------------------------------------------------------------------------
+# Capture live running config from SW-A-DEIE
+ansible SW-A-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show running-config'"
+
+# Check VLAN database on SW-A-DEIE
+ansible SW-A-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show vlan brief'"
+
+# Check trunk status on SW-A-DEIE
+ansible SW-A-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show interfaces trunk'"
+
+# Check OSPF neighbors on SW-D-DEIE
+ansible SW-D-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show ip ospf neighbor'"
+
+# Check IP interfaces on SW-D-DEIE
+ansible SW-D-DEIE -i hosts.yml -m cisco.ios.ios_command -a "commands='show ip interface brief'"
+
+
+6. OFFLINE SYNTAX & YAML PARSING CHECKS
+------------------------------------------------------------------------------
+# Validate all Ansible YAML syntax
+python -c "import yaml; from pathlib import Path; [yaml.safe_load(p.open(encoding='utf-8')) for p in Path('ansible').rglob('*.yml')]; print('ANSIBLE YAML OK')"
